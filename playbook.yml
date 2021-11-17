@@ -11,7 +11,7 @@
       when: ansible_os_family == "Ubuntu" 
     - name: Install required system packages centos
       dnf:name={{item}} state=latest update_cache=yes
-      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common']
+        loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common']
       when: ansible_os_family == "CentOS"
     - name: Add Docker GPG apt Key
       apt_key:
@@ -33,6 +33,6 @@
   become: true
   tasks:
     - name: install postgresql
-      apt: name='postgresql' state={{psql_state}} update_cache=yes
+      apt: name='postgresql' state="{{psql_state}}" update_cache=yes
     - name: start postgresql_service
       service: name=posgresql state=started
