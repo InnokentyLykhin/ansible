@@ -1,0 +1,14 @@
+all:
+  vars:
+    ansible_sudo_pass=12345
+  children:
+    database:
+      hosts:
+        ansibleuser@sf-ansible-vm1
+    web:
+      hosts:
+        ansibleuser@sf-ansible-vm1
+    app:
+      hosts:
+        ansibleuser@sf-ansible-vm2
+        ansibleuser@sf-ansible-vm3
