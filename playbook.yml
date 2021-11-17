@@ -4,28 +4,35 @@
     - /etc/ansible/inventory.yml
   become: true  
   tasks:
-    - name: Install required system packages
+    - name: Install required system packages ubuntu
       apt: name=aptitude state=latest update_cache=yes 
-    - name: Install required packages     
       apt: name={{item}} state=latest update_cache=yes
       loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common']
+      when: ansible_os_family == "Ubuntu" 
+    - name: Install required system packages centos
+      dnf:name={{item}} state=latest update_cache=yes
+      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common']
+      when: ansible_os_family == "CentOS"
     - name: Add Docker GPG apt Key
       apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
         state: present
+        when: ansible_os_family == "Ubuntu" 
     - name: Add Docker Repository
       apt_repository:
         repo: deb https://download.docker.com/linux/ubuntu bionic stable
         state: present
+      when: ansible_os_family == "Ubuntu"  
     - name: Update apt and install docker-ce
       apt: update_cache=yes name=docker-ce state=latest
+      when: ansible_os_family == "Ubuntu"
     - name: start docker
       service: name=docker state=started
-
+    
 - hosts: database
   become: true
   tasks:
     - name: install postgresql
-      apt: name='postgresql' state=latest update_cache=yes
+      apt: name='postgresql' state={{psql_state}} update_cache=yes
     - name: start postgresql_service
       service: name=posgresql state=started
