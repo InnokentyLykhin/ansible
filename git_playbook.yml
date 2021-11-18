@@ -1,8 +1,6 @@
 ---
 - hosts: app 
   gather_facts: true
-  vars_files:
-    - ~/ansible/inventory.yml
   vars:
     packets_ubuntu: ["aptitude", "ca-certificates", "curl", "software-properties-common"]
     packets_centos: ["ca-certificates", "curl", "yum-utils"]
@@ -46,34 +44,24 @@
   vars_files:
     - ~/ansible/inventory.yml
   vars:
-    db_user: sf_test
-    db_name: test
-    db_password: sf_test
-    packets_db: ["postgresql", "postgresql-contrib", "libpq-dev", "python3-psycopg2"]
+    packets_db: ["postgresql-contrib", "libpq-dev", "python3-psycopg2"]
+    postgresql_pack_name: "postgresql-10"
+    data_dir: "/home/data"
   become: true
   tasks:
-    - name: install postgresql
+    - name: install postgresql deps
       apt: name="{{ item }}" update_cache=true state=latest
       loop: "{{packets_db}}"
+    - name: install postgresql
+      apt: name="{{ postgresql_pack_name }}" update_cache=true state=latest
+    - name: check data_dir exist
+      stat:
+        path: "{{ data_dir }}"
+      register: check_data_dir
+    - name: create data directory
+      shell: "mkdir {{ data_dir }}"
+      when: not check_data_dir.stat.exists 
+    - name: change db data_dir   
+      shell: "pg_conftool set data_directory {{ data_dir }}" 
     - name: start postgresql_service
-      service: name=posgresql state=started
-    - name: Create the database specified in vars
-       become: true
-    become_user: postgres
-     postgresql_db: name={{ db_name }}
-          template="template0"
-          state=present
-    - name: Ensure user has access to the new database
-     become: true
-     become_user: postgres
-     postgresql_user: db={{ db_name }}
-          name={{ db_user }}
-          password={{ db_password }}
-          priv=ALL
-          state=present
-    - name: Ensure user does not have unnecessary permissions
-     become: true
-     become_user: postgres
-     postgresql_user: name={{ db_user }}
-          role_attr_flags=NOSUPERUSER,NOCREATEDB
-          state=present
+      service: name=postgresql state=started
