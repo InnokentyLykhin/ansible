@@ -41,8 +41,7 @@
       service: name=docker state=started
     
 - hosts: database
-  vars_files:
-    - ~/ansible/inventory.yml
+  gather_facts: true
   vars:
     packets_db: ["postgresql-contrib", "libpq-dev", "python3-psycopg2"]
     postgresql_pack_name: "postgresql-10"
