@@ -30,8 +30,12 @@
       apt: update_cache=yes name=docker-ce state=latest
       when: ansible_distribution == "Ubuntu"
     - name: Install docker-ce centos
-      
-      yum: name=docker-ce state=latest update_cache=yes
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+      package:
+        name: docker-ce
+        state: latest
       when: ansible_distribution == "CentOS"  
     - name: start docker
       service: name=docker state=started
